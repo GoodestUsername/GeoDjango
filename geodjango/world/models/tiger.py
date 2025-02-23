@@ -554,8 +554,6 @@ class Tabblock20(models.Model):
         db_table = 'tabblock20'
 
 
-
-
 class Tract(models.Model):
     gid = models.AutoField()
     statefp = models.CharField(max_length=2, blank=True, null=True)
