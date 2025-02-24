@@ -1,46 +1,129 @@
 import json
-
+from typing import Type
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.core.serializers import serialize
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db.models import Model
+from .models import (
+    OrwnStation,
+    OrwnCrossing,
+    OrwnJunction,
+    OrwnMarkerPost,
+    OrwnStructureLine,
+    OrwnStructurePoint,
+    OrwnTrack,
+)
 
-from .models import OrwnStation
+DEFAULT_LIMIT = 30
 
 
-@api_view(["GET"])
-def closest_station(request):
-    if request.method != 'GET':
+def parse_query_params(request):
+    if request.method != "GET":
         return Response(status=404)
 
     try:
-        lon = request.GET.get('lon')
-        lat = request.GET.get('lat')
+        lat = request.GET.get("lat")
+        lon = request.GET.get("lon")
+        limit = request.GET.get("limit") or DEFAULT_LIMIT
 
-        if lon is None or lat is None:
+        if lat is None or lon is None:
             return Response({"error": "Missing 'lon' or 'lat' parameter"}, status=400)
 
         try:
-            lon = float(lon)
             lat = float(lat)
+            lon = float(lon)
+            limit = float(limit)
         except ValueError:
-            return Response({"error": "Invalid 'lon' or 'lat' value"}, status=400)
+            return Response(
+                {"error": "Invalid 'lat' or 'lon' or 'limit' value"}, status=400
+            )
 
-        user_location = Point(lon, lat, srid=4269)
+        return {"lat": lat, "lon": lon, "limit": limit}
 
-        nearest_station = (
-            OrwnStation.objects.annotate(distance=Distance('shape', user_location))
-            .order_by('distance')
-            .first()
-        )
+    except (TypeError, ValueError):
+        return Response({"error": "Invalid coordinates or limit"}, status=400)
 
-        if not nearest_station:
-            return Response({"error": "No station found"}, status=404)
 
-        serialized = serialize("geojson", [nearest_station], geometry_field="shape", srid=4269)
+def get_closest(lat, lon, limit, model: Type[Model]):
+    try:
+        user_location = Point(lat, lon, srid=4269)
+
+        queried = model.objects.annotate(
+            distance=Distance("shape", user_location)
+        ).order_by("distance")[:limit]
+
+        if not queried:
+            return Response({"error": "None found"}, status=404)
+
+        serialized = serialize("geojson", queried, geometry_field="shape", srid=4269)
 
         return Response(json.loads(serialized), status=200)
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
+
+
+@api_view(["GET"])
+def closest_crossings(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnCrossing)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_junctions(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnJunction)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_marker_posts(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnMarkerPost)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_stations(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStation)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_structure_lines(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructureLine)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_structure_points(request):
+    args = parse_query_params(request)
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructurePoint)
+    else:
+        return args
+
+
+@api_view(["GET"])
+def closest_tracks(request):
+    args = parse_query_params(request)
+    print("test", args, isinstance(args, dict))
+    if isinstance(args, dict):
+        return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
+    else:
+        return args
