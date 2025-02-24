@@ -165,7 +165,7 @@ class OrwnStation(models.Model):
 
 class OrwnStructureLine(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.MultiLineStringField(srid=4269, blank=True, null=True)
+    shape = models.GeometryField(blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -207,7 +207,7 @@ class OrwnStructureLine(models.Model):
 
 class OrwnStructurePoint(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.PointField(srid=4269, blank=True, null=True)
+    shape = models.GeometryField(blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -246,7 +246,7 @@ class OrwnStructurePoint(models.Model):
 
 class OrwnTrack(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.MultiLineStringField(srid=4269, blank=True, null=True)
+    shape = models.GeometryField(blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     tracknid = models.CharField(max_length=32, blank=True, null=True)
     tracksegid = models.CharField(max_length=32, blank=True, null=True)
