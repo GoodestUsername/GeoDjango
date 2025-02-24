@@ -17,9 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from geodjango import views
+from rail import views
+
 
 urlpatterns = [
-    path("geo_data", views.geo_data),
+    # path("geo_data", views.geo_data),
     path('admin/', admin.site.urls),
+    # path('', include(router.urls)),
+    path('closest_station/', views.closest_station)
 ]
