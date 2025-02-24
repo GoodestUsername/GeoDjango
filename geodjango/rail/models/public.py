@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 
+
 class OrwnCrossing(models.Model):
     objectid = models.AutoField(primary_key=True)
     ogf_id = models.FloatField(blank=True, null=True, default=0)
@@ -43,7 +44,7 @@ class OrwnCrossing(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_crossing'
+        db_table = "orwn_crossing"
 
 
 class OrwnJunction(models.Model):
@@ -70,7 +71,7 @@ class OrwnJunction(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_junction'
+        db_table = "orwn_junction"
 
 
 class OrwnMarkerPost(models.Model):
@@ -107,7 +108,7 @@ class OrwnMarkerPost(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_marker_post'
+        db_table = "orwn_marker_post"
 
 
 class OrwnStation(models.Model):
@@ -160,12 +161,12 @@ class OrwnStation(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_station'
+        db_table = "orwn_station"
 
 
 class OrwnStructureLine(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(blank=True, null=True)
+    shape = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -202,12 +203,12 @@ class OrwnStructureLine(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_structure_line'
+        db_table = "orwn_structure_line"
 
 
 class OrwnStructurePoint(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(blank=True, null=True)
+    shape = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -241,12 +242,12 @@ class OrwnStructurePoint(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_structure_point'
+        db_table = "orwn_structure_point"
 
 
 class OrwnTrack(models.Model):
     objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(blank=True, null=True)
+    shape = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     tracknid = models.CharField(max_length=32, blank=True, null=True)
     tracksegid = models.CharField(max_length=32, blank=True, null=True)
@@ -310,4 +311,4 @@ class OrwnTrack(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_track'
+        db_table = "orwn_track"
