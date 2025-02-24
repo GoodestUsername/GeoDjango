@@ -52,12 +52,12 @@ class Addrfeat(models.Model):
         db_table = 'addrfeat'
 
 class Bg(models.Model):
-    gid = models.AutoField()
+    gid = models.AutoField(primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     countyfp = models.CharField(max_length=3, blank=True, null=True)
     tractce = models.CharField(max_length=6, blank=True, null=True)
     blkgrpce = models.CharField(max_length=1, blank=True, null=True)
-    bg_id = models.CharField(primary_key=True, max_length=12)
+    bg_id = models.CharField(max_length=12)
     namelsad = models.CharField(max_length=13, blank=True, null=True)
     mtfcc = models.CharField(max_length=5, blank=True, null=True)
     funcstat = models.CharField(max_length=1, blank=True, null=True)
@@ -73,11 +73,11 @@ class Bg(models.Model):
         db_table_comment = 'block groups'
 
 class County(models.Model):
-    gid = models.AutoField(unique=True)
+    gid = models.AutoField(unique=True, primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     countyfp = models.CharField(max_length=3, blank=True, null=True)
     countyns = models.CharField(max_length=8, blank=True, null=True)
-    cntyidfp = models.CharField(primary_key=True, max_length=5)
+    cntyidfp = models.CharField(max_length=5)
     name = models.CharField(max_length=100, blank=True, null=True)
     namelsad = models.CharField(max_length=100, blank=True, null=True)
     lsad = models.CharField(max_length=2, blank=True, null=True)
@@ -125,12 +125,12 @@ class CountysubLookup(models.Model):
 
 
 class Cousub(models.Model):
-    gid = models.AutoField(unique=True)
+    gid = models.AutoField(unique=True, primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     countyfp = models.CharField(max_length=3, blank=True, null=True)
     cousubfp = models.CharField(max_length=5, blank=True, null=True)
     cousubns = models.CharField(max_length=8, blank=True, null=True)
-    cosbidfp = models.CharField(primary_key=True, max_length=10)
+    cosbidfp = models.CharField(max_length=10)
     name = models.CharField(max_length=100, blank=True, null=True)
     namelsad = models.CharField(max_length=100, blank=True, null=True)
     lsad = models.CharField(max_length=2, blank=True, null=True)
@@ -417,11 +417,11 @@ class PagcRules(models.Model):
 
 
 class Place(models.Model):
-    gid = models.AutoField(unique=True)
+    gid = models.AutoField(unique=True, primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     placefp = models.CharField(max_length=5, blank=True, null=True)
     placens = models.CharField(max_length=8, blank=True, null=True)
-    plcidfp = models.CharField(primary_key=True, max_length=7)
+    plcidfp = models.CharField(max_length=7)
     name = models.CharField(max_length=100, blank=True, null=True)
     namelsad = models.CharField(max_length=100, blank=True, null=True)
     lsad = models.CharField(max_length=2, blank=True, null=True)
@@ -464,10 +464,10 @@ class SecondaryUnitLookup(models.Model):
 
 
 class State(models.Model):
-    gid = models.AutoField(unique=True)
+    gid = models.AutoField(unique=True, primary_key=True)
     region = models.CharField(max_length=2, blank=True, null=True)
     division = models.CharField(max_length=2, blank=True, null=True)
-    statefp = models.CharField(primary_key=True, max_length=2)
+    statefp = models.CharField(max_length=2)
     statens = models.CharField(max_length=8, blank=True, null=True)
     stusps = models.CharField(unique=True, max_length=2)
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -507,12 +507,12 @@ class StreetTypeLookup(models.Model):
 
 
 class Tabblock(models.Model):
-    gid = models.AutoField()
+    gid = models.AutoField(primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     countyfp = models.CharField(max_length=3, blank=True, null=True)
     tractce = models.CharField(max_length=6, blank=True, null=True)
     blockce = models.CharField(max_length=4, blank=True, null=True)
-    tabblock_id = models.CharField(primary_key=True, max_length=16)
+    tabblock_id = models.CharField(max_length=16)
     name = models.CharField(max_length=20, blank=True, null=True)
     mtfcc = models.CharField(max_length=5, blank=True, null=True)
     ur = models.CharField(max_length=1, blank=True, null=True)
@@ -555,11 +555,11 @@ class Tabblock20(models.Model):
 
 
 class Tract(models.Model):
-    gid = models.AutoField()
+    gid = models.AutoField(primary_key=True)
     statefp = models.CharField(max_length=2, blank=True, null=True)
     countyfp = models.CharField(max_length=3, blank=True, null=True)
     tractce = models.CharField(max_length=6, blank=True, null=True)
-    tract_id = models.CharField(primary_key=True, max_length=11)
+    tract_id = models.CharField(max_length=11)
     name = models.CharField(max_length=7, blank=True, null=True)
     namelsad = models.CharField(max_length=20, blank=True, null=True)
     mtfcc = models.CharField(max_length=5, blank=True, null=True)
@@ -576,9 +576,9 @@ class Tract(models.Model):
 
 
 class Zcta5(models.Model):
-    gid = models.AutoField(unique=True)
+    gid = models.AutoField(unique=True, primary_key=True)
     statefp = models.CharField(max_length=2)
-    zcta5ce = models.CharField(primary_key=True, max_length=5)  # The composite primary key (zcta5ce, statefp) found, that is not supported. The first column is selected.
+    zcta5ce = models.CharField(max_length=5)  # The composite primary key (zcta5ce, statefp) found, that is not supported. The first column is selected.
     classfp = models.CharField(max_length=2, blank=True, null=True)
     mtfcc = models.CharField(max_length=5, blank=True, null=True)
     funcstat = models.CharField(max_length=1, blank=True, null=True)
