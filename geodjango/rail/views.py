@@ -122,7 +122,6 @@ def closest_structure_points(request):
 @api_view(["GET"])
 def closest_tracks(request):
     args = parse_query_params(request)
-    print("test", args, isinstance(args, dict))
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
     else:
