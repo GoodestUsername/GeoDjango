@@ -29,7 +29,6 @@ def closest_station(request):
 
         user_location = Point(lon, lat, srid=4269)
 
-        # Find the nearest station
         nearest_station = (
             OrwnStation.objects.annotate(distance=Distance('shape', user_location))
             .order_by('distance')
@@ -39,7 +38,6 @@ def closest_station(request):
         if not nearest_station:
             return Response({"error": "No station found"}, status=404)
 
-        # Serialize and return the result
         serialized = serialize("geojson", [nearest_station], geometry_field="shape", srid=4269)
 
         return Response(json.loads(serialized), status=200)
