@@ -126,3 +126,73 @@ def closest_tracks(request):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
     else:
         return args
+
+
+@api_view(["GET"])
+def stations(request):
+    try:
+        queried = OrwnStation.objects.all()
+
+        if not queried:
+            return Response({"error": "None found"}, status=404)
+
+        serialized = serialize("geojson", queried, geometry_field="shape", srid=4269)
+
+        return Response(json.loads(serialized), status=200)
+
+    except (TypeError, ValueError):
+        return Response({"error": "Invalid coordinates"}, status=400)
+
+
+@api_view(["GET"])
+def tracks_inbetween_stations(request):
+    if request.method != "GET":
+        return Response(status=404)
+
+    try:
+        from_lat = json.loads(request.GET.get("from_lat"))
+        from_lon = json.loads(request.GET.get("from_lon"))
+
+        to_lat = json.loads(request.GET.get("to_lat"))
+        to_lon = json.loads(request.GET.get("to_lon"))
+
+        srid = request.GET.get("srid")
+
+        if from_lat is None or from_lon is None or to_lat is None or to_lon is None or srid is None:
+            return Response({"error": "Missing a parameter"}, status=400)
+
+        try:
+            from_lat = float(from_lat)
+            from_lon = float(from_lon)
+
+            to_lat = float(to_lat)
+            to_lon = float(to_lon)
+
+            srid = int(srid)
+        except ValueError:
+            return Response(
+                {"error": "Invalid type value"}, status=400
+            )
+
+        try:
+            result = OrwnTrack.objects.raw(
+                f"WITH bbox AS ("
+                    f"SELECT ST_SetSRID(ST_Envelope(ST_Collect(shape)), {srid}) AS shape "
+                    f"FROM (VALUES "
+                        f"(ST_SetSRID(ST_MakePoint({from_lon}, {from_lat}), {srid})),"
+                        f"(ST_SetSRID(ST_MakePoint({to_lon}, {to_lat}), {srid}))"
+                f") AS points(shape)) "
+                f"SELECT * "
+                f"FROM orwn_track, bbox "
+                f"WHERE ST_Intersects(orwn_track.shape, bbox.shape);"
+            )
+
+            serialized = serialize("geojson", result, geometry_field="shape", srid=4269)
+
+            return Response(serialized, status=200)
+        except Exception as e:
+            print(f'exception: {e}')
+            return Response({"error": "Internal Server Error"}, status=500)
+
+    except (TypeError, ValueError):
+        return Response({"error": "Invalid from and to points."}, status=400)

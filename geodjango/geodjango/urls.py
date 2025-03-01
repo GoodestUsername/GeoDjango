@@ -23,6 +23,7 @@ urlpatterns = [
     # path("geo_data", views.geo_data),
     path('admin/', admin.site.urls),
     # path('', include(router.urls)),
+    path('stations/', views.stations),
     path('closest_crossings/', views.closest_crossings),
     path('closest_junctions/', views.closest_junctions),
     path('closest_marker_posts/', views.closest_marker_posts),
@@ -30,4 +31,5 @@ urlpatterns = [
     path('closest_structure_lines/', views.closest_structure_lines),
     path('closest_structure_points/', views.closest_structure_points),
     path('closest_tracks/', views.closest_tracks),
+    path('tracks_inbetween_stations/', views.tracks_inbetween_stations),
 ]
