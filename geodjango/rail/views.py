@@ -139,7 +139,7 @@ def closest_tracks(request):
 
 #region get all
 @api_view(["GET"])
-def stations(request):
+def stations():
     try:
         queried = OrwnStation.objects.all()
 
