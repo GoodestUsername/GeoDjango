@@ -145,7 +145,7 @@ def stations(request):
 
 
 @api_view(["GET"])
-def tracks_inbetween_stations(request):
+def tracks_inbetween_points(request):
     if request.method != "GET":
         return Response(status=404)
 

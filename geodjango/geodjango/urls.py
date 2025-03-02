@@ -31,5 +31,5 @@ urlpatterns = [
     path('closest_structure_lines/', views.closest_structure_lines),
     path('closest_structure_points/', views.closest_structure_points),
     path('closest_tracks/', views.closest_tracks),
-    path('tracks_inbetween_stations/', views.tracks_inbetween_stations),
+    path('tracks_inbetween_points/', views.tracks_inbetween_points),
 ]
