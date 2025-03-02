@@ -18,7 +18,11 @@ from .models import (
 
 DEFAULT_LIMIT = 30
 
-#region closest_fn helpers
+
+# region closest_fn
+
+# region helpers
+
 def parse_query_params_closest(request):
     if request.method != "GET":
         return Response(status=404)
@@ -45,6 +49,7 @@ def parse_query_params_closest(request):
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates or limit"}, status=400)
 
+
 def get_closest(lat, lon, limit, model: Type[Model]):
     try:
         user_location = Point(lat, lon, srid=4269)
@@ -62,9 +67,11 @@ def get_closest(lat, lon, limit, model: Type[Model]):
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
-#endregion closest_fn helpers
 
-#region closest_fn
+# endregion helpers
+
+
+# region concrete
 @api_view(["GET"])
 def closest_crossings(request):
     args = parse_query_params_closest(request)
@@ -126,6 +133,8 @@ def closest_tracks(request):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
     else:
         return args
+#endregion concrete
+
 #endregion closest_fn
 
 #region get all
