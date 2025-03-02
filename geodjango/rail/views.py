@@ -172,7 +172,13 @@ def parse_query_params_two_points_srid(request):
 
         srid = request.GET.get("srid")
 
-        if from_lat is None or from_lon is None or to_lat is None or to_lon is None or srid is None:
+        if (
+            from_lat is None
+            or from_lon is None
+            or to_lat is None
+            or to_lon is None
+            or srid is None
+        ):
             return Response({"error": "Missing a parameter"}, status=400)
 
         try:
@@ -183,33 +189,165 @@ def parse_query_params_two_points_srid(request):
             to_lon = float(to_lon)
 
             srid = int(srid)
+
+            return {
+                "from_lat": from_lat,
+                "from_lon": from_lon,
+                "to_lat": to_lat,
+                "to_lon": to_lon,
+                "srid": srid,
+            }
         except ValueError:
-            return Response(
-                {"error": "Invalid type value"}, status=400
-            )
-
-        try:
-            result = OrwnTrack.objects.raw(
-                f"WITH bbox AS ("
-                    f"SELECT ST_SetSRID(ST_Envelope(ST_Collect(shape)), {srid}) AS shape "
-                    f"FROM (VALUES "
-                        f"(ST_SetSRID(ST_MakePoint({from_lon}, {from_lat}), {srid})),"
-                        f"(ST_SetSRID(ST_MakePoint({to_lon}, {to_lat}), {srid}))"
-                f") AS points(shape)) "
-                f"SELECT * "
-                f"FROM orwn_track, bbox "
-                f"WHERE ST_Intersects(orwn_track.shape, bbox.shape);"
-            )
-
-            serialized = serialize("geojson", result, geometry_field="shape", srid=4269)
-
-            return Response(serialized, status=200)
-        except Exception as e:
-            print(f'exception: {e}')
-            return Response({"error": "Internal Server Error"}, status=500)
+            return Response({"error": "Invalid type value"}, status=400)
 
     except (TypeError, ValueError):
-        return Response({"error": "Invalid from and to points."}, status=400)
+        return Response({"error": "Bad params"}, status=400)
+
+
+def get_inbetween_points(
+    srid: int,
+    from_lat: float,
+    from_lon: float,
+    to_lat: float,
+    to_lon: float,
+    model: Type[Model],
+):
+    try:
+        table_name = model._meta.db_table
+        result = model.objects.raw(
+            f"WITH bbox AS ("
+            f"SELECT ST_SetSRID(ST_Envelope(ST_Collect(shape)), {srid}) AS shape "
+            f"FROM (VALUES "
+            f"(ST_SetSRID(ST_MakePoint({from_lon}, {from_lat}), {srid})),"
+            f"(ST_SetSRID(ST_MakePoint({to_lon}, {to_lat}), {srid}))"
+            f") AS points(shape)) "
+            f"SELECT * "
+            f"FROM {table_name}, bbox "
+            f"WHERE ST_Intersects({table_name}.shape, bbox.shape);"
+        )
+
+        serialized = serialize("geojson", result, geometry_field="shape", srid=srid)
+
+        return Response(serialized, status=200)
+    except Exception as e:
+        print(f"exception: {e}")
+        return Response({"error": "Internal Server Error"}, status=500)
+
+# endregion helpers
+
+# region concrete
+@api_view(["GET"])
+def crossings_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnCrossing,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def junctions_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnJunction,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def marker_posts_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnMarkerPost,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def stations_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnStation,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def structure_lines_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnStructureLine,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def structure_points_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnStructurePoint,
+        )
+    else:
+        return args
+
+
+@api_view(["GET"])
+def tracks_inbetween_points(request):
+    args = parse_query_params_two_points_srid(request)
+    if isinstance(args, dict):
+        return get_inbetween_points(
+            args["srid"],
+            args["from_lat"],
+            args["from_lon"],
+            args["to_lat"],
+            args["to_lon"],
+            OrwnTrack,
+        )
+    else:
+        return args
+
+
 # endregion concrete
 
 # endregion x between two points

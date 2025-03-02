@@ -31,5 +31,12 @@ urlpatterns = [
     path('closest_structure_lines/', views.closest_structure_lines),
     path('closest_structure_points/', views.closest_structure_points),
     path('closest_tracks/', views.closest_tracks),
+    path('crossings_inbetween_points/', views.crossings_inbetween_points),
+    path('junctions_inbetween_points/', views.junctions_inbetween_points),
+    path('marker_posts_inbetween_points/', views.marker_posts_inbetween_points),
+    path('stations_inbetween_points/', views.stations_inbetween_points),
+    path('structure_lines_inbetween_points/', views.structure_lines_inbetween_points),
+    path('structure_points_inbetween_points/', views.structure_points_inbetween_points),
+    path('structure_points_inbetween_points/', views.structure_points_inbetween_points),
     path('tracks_inbetween_points/', views.tracks_inbetween_points),
 ]
