@@ -152,11 +152,14 @@ def stations():
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
+
 #endregion get all
 
 #region x between two points
-@api_view(["GET"])
-def tracks_inbetween_points(request):
+
+# region helpers
+
+def parse_query_params_two_points_srid(request):
     if request.method != "GET":
         return Response(status=404)
 
@@ -207,3 +210,6 @@ def tracks_inbetween_points(request):
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid from and to points."}, status=400)
+# endregion concrete
+
+# endregion x between two points
