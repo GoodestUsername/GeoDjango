@@ -18,8 +18,8 @@ from .models import (
 
 DEFAULT_LIMIT = 30
 
-
-def parse_query_params(request):
+#region closest_fn helpers
+def parse_query_params_closest(request):
     if request.method != "GET":
         return Response(status=404)
 
@@ -45,7 +45,6 @@ def parse_query_params(request):
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates or limit"}, status=400)
 
-
 def get_closest(lat, lon, limit, model: Type[Model]):
     try:
         user_location = Point(lat, lon, srid=4269)
@@ -63,11 +62,12 @@ def get_closest(lat, lon, limit, model: Type[Model]):
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
+#endregion closest_fn helpers
 
-
+#region closest_fn
 @api_view(["GET"])
 def closest_crossings(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnCrossing)
     else:
@@ -76,7 +76,7 @@ def closest_crossings(request):
 
 @api_view(["GET"])
 def closest_junctions(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnJunction)
     else:
@@ -85,7 +85,7 @@ def closest_junctions(request):
 
 @api_view(["GET"])
 def closest_marker_posts(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnMarkerPost)
     else:
@@ -94,7 +94,7 @@ def closest_marker_posts(request):
 
 @api_view(["GET"])
 def closest_stations(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnStation)
     else:
@@ -103,7 +103,7 @@ def closest_stations(request):
 
 @api_view(["GET"])
 def closest_structure_lines(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructureLine)
     else:
@@ -112,7 +112,7 @@ def closest_structure_lines(request):
 
 @api_view(["GET"])
 def closest_structure_points(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructurePoint)
     else:
@@ -121,13 +121,14 @@ def closest_structure_points(request):
 
 @api_view(["GET"])
 def closest_tracks(request):
-    args = parse_query_params(request)
+    args = parse_query_params_closest(request)
     if isinstance(args, dict):
         return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
     else:
         return args
+#endregion closest_fn
 
-
+#region get all
 @api_view(["GET"])
 def stations(request):
     try:
@@ -142,8 +143,9 @@ def stations(request):
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
+#endregion get all
 
-
+#region x between two points
 @api_view(["GET"])
 def tracks_inbetween_points(request):
     if request.method != "GET":
