@@ -75,64 +75,70 @@ def get_closest(lat, lon, limit, model: Type[Model]):
 @api_view(["GET"])
 def closest_crossings(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnCrossing)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnCrossing)
 
 
 @api_view(["GET"])
 def closest_junctions(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnJunction)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnJunction)
+
 
 
 @api_view(["GET"])
 def closest_marker_posts(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnMarkerPost)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnMarkerPost)
+
 
 
 @api_view(["GET"])
 def closest_stations(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStation)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnStation)
+
 
 
 @api_view(["GET"])
 def closest_structure_lines(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructureLine)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructureLine)
+
 
 
 @api_view(["GET"])
 def closest_structure_points(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructurePoint)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructurePoint)
+
 
 
 @api_view(["GET"])
 def closest_tracks(request):
     args = parse_query_params_closest(request)
-    if isinstance(args, dict):
-        return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
-    else:
+    if not isinstance(args, dict):
         return args
+
+    return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
+
 #endregion concrete
 
 #endregion closest_fn
