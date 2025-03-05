@@ -39,4 +39,5 @@ urlpatterns = [
     path('structure_points_inbetween_points/', views.structure_points_inbetween_points),
     path('structure_points_inbetween_points/', views.structure_points_inbetween_points),
     path('tracks_inbetween_points/', views.tracks_inbetween_points),
+    path('station_route_for_track/', views.station_route_for_track),
 ]
