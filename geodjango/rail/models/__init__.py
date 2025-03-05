@@ -5,7 +5,9 @@ from .public import (
     OrwnStation,
     OrwnStructureLine,
     OrwnStructurePoint,
-    OrwnTrack
+    OrwnTrack,
+    OrwnTrackNoded,
+    OrwnTrackNodedVerticesPgr
 )
 
 from .tiger import (

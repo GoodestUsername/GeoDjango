@@ -312,3 +312,29 @@ class OrwnTrack(models.Model):
     class Meta:
         managed = False
         db_table = "orwn_track"
+
+
+class OrwnTrackNoded(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    old_id = models.IntegerField(blank=True, null=True)
+    sub_id = models.IntegerField(blank=True, null=True)
+    source = models.BigIntegerField(blank=True, null=True)
+    target = models.BigIntegerField(blank=True, null=True)
+    shape = models.LineStringField(srid=4269, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'orwn_track_noded'
+
+
+class OrwnTrackNodedVerticesPgr(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    cnt = models.IntegerField(blank=True, null=True)
+    chk = models.IntegerField(blank=True, null=True)
+    ein = models.IntegerField(blank=True, null=True)
+    eout = models.IntegerField(blank=True, null=True)
+    the_geom = models.PointField(srid=4269, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'orwn_track_noded_vertices_pgr'
