@@ -2,7 +2,7 @@ from django.contrib.gis.db import models
 
 
 class OrwnCrossing(models.Model):
-    objectid = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     ogf_id = models.FloatField(blank=True, null=True, default=0)
     nid = models.CharField(max_length=32, blank=True, null=True)
     crossingid = models.CharField(max_length=32, blank=True, null=True)
@@ -40,7 +40,7 @@ class OrwnCrossing(models.Model):
     attacqtech = models.CharField(max_length=25, blank=True, null=True)
     attprovide = models.CharField(max_length=25, blank=True, null=True)
     effective_datetime = models.DateTimeField(blank=True, null=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -48,8 +48,8 @@ class OrwnCrossing(models.Model):
 
 
 class OrwnJunction(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True, default=0)
     nid = models.CharField(max_length=32, blank=True, null=True)
     bndytrind = models.CharField(max_length=5, blank=True, null=True)
@@ -75,8 +75,8 @@ class OrwnJunction(models.Model):
 
 
 class OrwnMarkerPost(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True, default=0)
     nid = models.CharField(max_length=32, blank=True, null=True)
     tracknid = models.CharField(max_length=32, blank=True, null=True)
@@ -112,8 +112,8 @@ class OrwnMarkerPost(models.Model):
 
 
 class OrwnStation(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True, default=0)
     nid = models.CharField(max_length=32, blank=True, null=True)
     stenname = models.CharField(max_length=100, blank=True, null=True)
@@ -165,8 +165,8 @@ class OrwnStation(models.Model):
 
 
 class OrwnStructureLine(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -199,7 +199,7 @@ class OrwnStructureLine(models.Model):
     attacqtech = models.CharField(max_length=25, blank=True, null=True)
     attprovide = models.CharField(max_length=25, blank=True, null=True)
     effective_datetime = models.DateTimeField(blank=True, null=True)
-    shape_length = models.FloatField(blank=True, null=True)
+    geom_length = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -207,8 +207,8 @@ class OrwnStructureLine(models.Model):
 
 
 class OrwnStructurePoint(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     nid = models.CharField(max_length=32, blank=True, null=True)
     strucid = models.CharField(max_length=32, blank=True, null=True)
@@ -246,8 +246,8 @@ class OrwnStructurePoint(models.Model):
 
 
 class OrwnTrack(models.Model):
-    objectid = models.AutoField(primary_key=True)
-    shape = models.GeometryField(srid=4269, blank=True, null=True)
+    id = models.AutoField(primary_key=True)
+    geom = models.GeometryField(srid=4269, blank=True, null=True)
     ogf_id = models.FloatField(blank=True, null=True)
     tracknid = models.CharField(max_length=32, blank=True, null=True)
     tracksegid = models.CharField(max_length=32, blank=True, null=True)
@@ -307,7 +307,7 @@ class OrwnTrack(models.Model):
     attacqtech = models.CharField(max_length=25, blank=True, null=True)
     attprovide = models.CharField(max_length=25, blank=True, null=True)
     effective_datetime = models.DateTimeField(blank=True, null=True)
-    shape_length = models.FloatField(blank=True, null=True)
+    geom_length = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -320,11 +320,11 @@ class OrwnTrackNoded(models.Model):
     sub_id = models.IntegerField(blank=True, null=True)
     source = models.BigIntegerField(blank=True, null=True)
     target = models.BigIntegerField(blank=True, null=True)
-    shape = models.LineStringField(srid=4269, blank=True, null=True)
+    geom = models.LineStringField(srid=4269, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'orwn_track_noded'
+        db_table = "orwn_track_noded"
 
 
 class OrwnTrackNodedVerticesPgr(models.Model):
@@ -337,4 +337,4 @@ class OrwnTrackNodedVerticesPgr(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'orwn_track_noded_vertices_pgr'
+        db_table = "orwn_track_noded_vertices_pgr"

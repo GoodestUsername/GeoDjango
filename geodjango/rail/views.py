@@ -1,6 +1,5 @@
 import json
 from typing import Type
-from shapely import wkb
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point, GEOSGeometry
 from django.core.serializers import serialize
@@ -16,10 +15,11 @@ from .models import (
     OrwnStructureLine,
     OrwnStructurePoint,
     OrwnTrack,
-    OrwnTrackNoded
+    OrwnTrackNoded,
 )
 
 DEFAULT_LIMIT = 30
+
 
 def dict_fetch_all(cursor):
     """
@@ -33,6 +33,7 @@ def dict_fetch_all(cursor):
 # region closest_fn
 
 # region helpers
+
 
 def parse_query_params_closest(request):
     if request.method != "GET":
@@ -66,18 +67,19 @@ def get_closest(lat, lon, limit, model: Type[Model]):
         user_location = Point(lat, lon, srid=4269)
 
         queried = model.objects.annotate(
-            distance=Distance("shape", user_location)
+            distance=Distance("geom", user_location)
         ).order_by("distance")[:limit]
 
         if not queried:
             return Response({"error": "None found"}, status=404)
 
-        serialized = serialize("geojson", queried, geometry_field="shape", srid=4269)
+        serialized = serialize("geojson", queried, geometry_field="geom", srid=4269)
 
         return Response(json.loads(serialized), status=200)
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
+
 
 # endregion helpers
 
@@ -101,7 +103,6 @@ def closest_junctions(request):
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnJunction)
 
 
-
 @api_view(["GET"])
 def closest_marker_posts(request):
     args = parse_query_params_closest(request)
@@ -109,7 +110,6 @@ def closest_marker_posts(request):
         return args
 
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnMarkerPost)
-
 
 
 @api_view(["GET"])
@@ -121,7 +121,6 @@ def closest_stations(request):
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnStation)
 
 
-
 @api_view(["GET"])
 def closest_structure_lines(request):
     args = parse_query_params_closest(request)
@@ -129,7 +128,6 @@ def closest_structure_lines(request):
         return args
 
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructureLine)
-
 
 
 @api_view(["GET"])
@@ -141,7 +139,6 @@ def closest_structure_points(request):
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnStructurePoint)
 
 
-
 @api_view(["GET"])
 def closest_tracks(request):
     args = parse_query_params_closest(request)
@@ -150,9 +147,11 @@ def closest_tracks(request):
 
     return get_closest(args["lat"], args["lon"], args["limit"], OrwnTrack)
 
-#endregion concrete
 
-#endregion closest_fn
+# endregion concrete
+
+# endregion closest_fn
+
 
 # region get all
 @api_view(["GET"])
@@ -163,18 +162,20 @@ def stations(_):
         if not queried:
             return Response({"error": "None found"}, status=404)
 
-        serialized = serialize("geojson", queried, geometry_field="shape", srid=4269)
+        serialized = serialize("geojson", queried, geometry_field="geom", srid=4269)
 
         return Response(json.loads(serialized), status=200)
 
     except (TypeError, ValueError):
         return Response({"error": "Invalid coordinates"}, status=400)
 
+
 # endregion get all
 
 # region x between two points
 
 # region helpers
+
 
 def parse_query_params_two_points_srid(request):
     if request.method != "GET":
@@ -186,11 +187,7 @@ def parse_query_params_two_points_srid(request):
 
         srid = request.GET.get("srid")
 
-        if (
-            from_lon is None
-            or to_lon is None
-            or srid is None
-        ):
+        if from_lon is None or to_lon is None or srid is None:
             return Response({"error": "Missing a parameter"}, status=400)
 
         try:
@@ -228,25 +225,27 @@ def get_inbetween_points(
                 SELECT *
                 FROM {table_name}
                 WHERE ST_Intersects(
-                    {table_name}.shape,
+                    {table_name}.geom,
                     ST_MakeEnvelope(
                         {min_x},
-                        (SELECT MIN(ST_YMin({table_name}.shape)) FROM {table_name}),
+                        (SELECT MIN(ST_YMin({table_name}.geom)) FROM {table_name}),
                         {max_x},
-                        (SELECT MAX(ST_YMax({table_name}.shape)) FROM {table_name}),
+                        (SELECT MAX(ST_YMax({table_name}.geom)) FROM {table_name}),
                         {srid}
                     )
                 )"""
         )
 
-        serialized = serialize("geojson", result, geometry_field="shape", srid=srid)
+        serialized = serialize("geojson", result, geometry_field="geom", srid=srid)
 
         return Response(serialized, status=200)
     except Exception as e:
         print(f"exception: {e}")
         return Response({"error": "Internal Server Error"}, status=500)
 
+
 # endregion helpers
+
 
 # region concrete
 @api_view(["GET"])
@@ -353,6 +352,7 @@ def tracks_inbetween_points(request):
 
 # region routing
 
+
 @api_view(["GET"])
 def station_route_for_track(request):
     from_station_id = int(request.GET.get("from_station_id"))
@@ -364,53 +364,52 @@ def station_route_for_track(request):
         track_noded_table_name = OrwnTrackNoded._meta.db_table
 
         with connection.cursor() as cursor:
-            cursor.execute(f"""
-            WITH 
-                start_node AS (
-                    SELECT "source" AS node_id 
-                    FROM orwn_track_noded
-                    ORDER BY shape <-> (SELECT shape FROM {station_table_name} WHERE objectid = {from_station_id}) 
-                    LIMIT 1
-                ),
-            
-                end_node AS (
-                    SELECT "target" AS node_id 
-                    FROM orwn_track_noded
-                    ORDER BY shape <-> (SELECT shape FROM {station_table_name} WHERE objectid = {to_station_id}) 
-                    LIMIT 1
-                )
-
-                SELECT route.*, original.*
-                FROM pgr_dijkstra(
-                        'SELECT id,
-                                old_id,
-                                source,
-                                target,
-                                ST_Length(shape) AS cost
-                         FROM {track_noded_table_name}',
-                        (SELECT node_id FROM start_node), 
-                        (SELECT node_id FROM end_node),
-                         FALSE
-                ) AS route
-                JOIN {track_noded_table_name} AS edges
-                    ON route.edge = edges.id
-                JOIN {track_table_name} AS original
-                    ON original.objectid = edges.old_id;
+            cursor.execute(
+                f"""
+                    WITH 
+                        start_node AS (
+                            SELECT "source" AS node_id 
+                            FROM orwn_track_noded
+                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
+                            LIMIT 1
+                        ),
+                    
+                        end_node AS (
+                            SELECT "target" AS node_id 
+                            FROM orwn_track_noded
+                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
+                            LIMIT 1
+                        )
+        
+                        SELECT route.*, original.*
+                        FROM pgr_dijkstra(
+                                'SELECT id,
+                                        old_id,
+                                        source,
+                                        target,
+                                        ST_Length(the_geom) AS cost
+                                FROM {track_noded_table_name}',
+                                (SELECT node_id FROM start_node), 
+                                (SELECT node_id FROM end_node),
+                                FALSE
+                        ) AS route
+                        JOIN {track_noded_table_name} AS edges
+                            ON route.edge = edges.id
+                        JOIN {track_table_name} AS original
+                            ON original.id = edges.old_id;
                 """,
             )
             result = dict_fetch_all(cursor)
-            geojson = {
-                "type": "FeatureCollection",
-                "features": []
-            }
+            geojson = {"type": "FeatureCollection", "features": []}
 
             for item in result:
-                # shape = GEOSGeometry(item["shape"])
-                shape = GEOSGeometry(memoryview(bytes.fromhex(item["shape"])))
+                geom = GEOSGeometry(memoryview(bytes.fromhex(item["geom"])))
                 feature = {
                     "type": "Feature",
-                    "geometry": json.loads(shape.geojson),
-                    "properties": {key: value for key, value in item.items() if key != "shape"}
+                    "geometry": json.loads(geom.geojson),
+                    "properties": {
+                        key: value for key, value in item.items() if key != "geom"
+                    },
                 }
 
                 geojson["features"].append(feature)
@@ -418,11 +417,12 @@ def station_route_for_track(request):
 
         # return row
 
-        # serialized = serialize("geojson", result, geometry_field="shape", srid=srid)
+        # serialized = serialize("geojson", result, geometry_field="geom", srid=srid)
 
         # return Response(serialized, status=200)
     except Exception as e:
         print(f"exception: {e}")
         return Response({"error": "Internal Server Error"}, status=500)
+
 
 # endregion routing
