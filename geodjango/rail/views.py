@@ -369,18 +369,18 @@ def station_route_for_track(request):
                     WITH 
                         start_node AS (
                             SELECT "source" AS node_id 
-                            FROM orwn_track_noded
+                            FROM {track_noded_table_name}
                             ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
                             LIMIT 1
                         ),
                     
                         end_node AS (
                             SELECT "target" AS node_id 
-                            FROM orwn_track_noded
+                            FROM {track_noded_table_name}
                             ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
                             LIMIT 1
                         )
-        
+    
                         SELECT route.*, original.*
                         FROM pgr_dijkstra(
                                 'SELECT id,
