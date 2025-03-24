@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:17
 
 ENV POSTGRES_USER postgres
 ENV POSTGRES_PASSWORD postgres
@@ -6,9 +6,9 @@ ENV POSTGRES_DB gis
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        postgresql-16-postgis-3 \
-        postgresql-16-postgis-3-scripts \
-        postgresql-16-pgrouting \
+        postgresql-17-postgis-3 \
+        postgresql-17-postgis-3-scripts \
+        postgresql-17-pgrouting \
         gdal-bin \
         wget \
         ca-certificates \
