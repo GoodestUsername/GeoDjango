@@ -24,10 +24,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.django
-    volumes:
-      - ./geodjango:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/mediafiles
     ports:
       - "8000:8000"
     depends_on:
@@ -40,5 +36,3 @@ services:
 
 volumes:
   postgres_data:
-  static_volume:
-  media_volume:
