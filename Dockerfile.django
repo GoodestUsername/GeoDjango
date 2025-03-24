@@ -25,6 +25,11 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Set GDAL environment variables
+ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so \
+    GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so \
+    PROJ_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libproj.so
+
 # Upgrade pip
 RUN pip install --upgrade pip
 
@@ -35,7 +40,6 @@ RUN pip install -r requirements.txt
 # Copy project code
 COPY ./geodjango /app/
 
-# Create the entrypoint script
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -45,6 +49,16 @@ while ! pg_isready -h db -p 5432 -U postgres; do\n\
   sleep 1\n\
 done\n\
 echo "PostgreSQL started"\n\
+\n\
+# Fix GDAL configuration\n\
+echo "Setting GDAL configuration..."\n\
+export GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so\n\
+export GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so\n\
+\n\
+# Print library paths for debugging\n\
+echo "GDAL library path: $GDAL_LIBRARY_PATH"\n\
+echo "GEOS library path: $GEOS_LIBRARY_PATH"\n\
+find /usr/lib -name "libgdal*" | xargs ls -la\n\
 \n\
 # Apply database migrations\n\
 python manage.py migrate\n\

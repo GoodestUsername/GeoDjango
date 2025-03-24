@@ -76,16 +76,14 @@ WSGI_APPLICATION = 'geodjango.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
-    "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "OntarioTorontoRail",
-        "USER": "postgres",
-        "PASSWORD": "password"
-    },
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'gis',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
+        'PORT': '5432',
+    }
 }
 
 
@@ -130,5 +128,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310"
-GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
+
+# Override GDAL library settings to use the container paths
+if os.environ.get('IN_DOCKER', False):
+    GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+    GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+else:
+    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310"
+    GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'

@@ -37,6 +37,7 @@ services:
       - DEBUG=1
       - SECRET_KEY=your-secret-key-here
       - ALLOWED_HOSTS=localhost,127.0.0.1
+      - IN_DOCKER=true
 
 volumes:
   postgres_data:
