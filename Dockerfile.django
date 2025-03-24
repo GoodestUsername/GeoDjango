@@ -35,9 +35,27 @@ RUN pip install -r requirements.txt
 # Copy project code
 COPY ./geodjango /app/
 
-# Make the entrypoint script executable
-COPY ./entrypoint.sh /app/
-RUN chmod +x /app/entrypoint.sh
+# Create the entrypoint script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Wait for Postgres to be ready\n\
+echo "Waiting for PostgreSQL..."\n\
+while ! pg_isready -h db -p 5432 -U postgres; do\n\
+  sleep 1\n\
+done\n\
+echo "PostgreSQL started"\n\
+\n\
+# Apply database migrations\n\
+python manage.py migrate\n\
+\n\
+# Collect static files\n\
+python manage.py collectstatic --noinput\n\
+\n\
+# Start server\n\
+exec python manage.py runserver 0.0.0.0:8000\n\
+' > /app/entrypoint.sh \
+&& chmod +x /app/entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 8000
