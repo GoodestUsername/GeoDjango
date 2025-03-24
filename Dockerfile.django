@@ -63,9 +63,6 @@ find /usr/lib -name "libgdal*" | xargs ls -la\n\
 # Apply database migrations\n\
 python manage.py migrate\n\
 \n\
-# Collect static files\n\
-python manage.py collectstatic --noinput\n\
-\n\
 # Start server\n\
 exec python manage.py runserver 0.0.0.0:8000\n\
 ' > /app/entrypoint.sh \
