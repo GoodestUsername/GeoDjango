@@ -167,8 +167,22 @@ def stations(_):
         return Response(json.loads(serialized), status=200)
 
     except (TypeError, ValueError):
-        return Response({"error": "Invalid coordinates"}, status=400)
+        return Response({"error": "Internal Server Error"}, status=400)
 
+@api_view(["GET"])
+def tracks(_):
+    try:
+        queried = OrwnTrack.objects.all()
+
+        if not queried:
+            return Response({"error": "None found"}, status=404)
+
+        serialized = serialize("geojson", queried, geometry_field="geom", srid=4269)
+
+        return Response(json.loads(serialized), status=200)
+
+    except (TypeError, ValueError):
+        return Response({"error": "Internal Server Error"}, status=400)
 
 # endregion get all
 
