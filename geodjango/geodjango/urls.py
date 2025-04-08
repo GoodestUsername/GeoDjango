@@ -22,7 +22,9 @@ from rail import views
 urlpatterns = [
     # path("geo_data", views.geo_data),
     path('admin/', admin.site.urls),
+
     # path('', include(router.urls)),
+    path('tracks/', views.tracks),
     path('stations/', views.stations),
     path('closest_crossings/', views.closest_crossings),
     path('closest_junctions/', views.closest_junctions),
