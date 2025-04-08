@@ -1,0 +1,81 @@
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        binutils \
+        libproj-dev \
+        gdal-bin \
+        libgdal-dev \
+        python3-gdal \
+        postgresql-client \
+        libpq-dev \
+        gcc \
+        g++ \
+        git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set GDAL environment variables
+ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so \
+    GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so \
+    PROJ_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libproj.so
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install Python dependencies
+COPY ./requirements.txt /app/
+RUN pip install -r requirements.txt
+
+# Copy project code
+COPY ./geodjango /app/
+
+COPY ./OntarioTorontoRail.sql /app/
+
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Wait for Postgres to be ready\n\
+echo "Waiting for PostgreSQL..."\n\
+while ! pg_isready -h db -p 5432 -U postgres; do\n\
+  sleep 1\n\
+done\n\
+echo "PostgreSQL started"\n\
+\n\
+# Fix GDAL configuration\n\
+echo "Setting GDAL configuration..."\n\
+export GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so\n\
+export GEOS_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so\n\
+\n\
+# Print library paths for debugging\n\
+echo "GDAL library path: $GDAL_LIBRARY_PATH"\n\
+echo "GEOS library path: $GEOS_LIBRARY_PATH"\n\
+find /usr/lib -name "libgdal*" | xargs ls -la\n\
+\n\
+# Apply database migrations\n\
+python manage.py makemigrations\n\
+\n\
+python manage.py migrate\n\
+\n\
+PGPASSWORD=postgres psql -U postgres -h db -p 5432 -d gis -f /app/OntarioTorontoRail.sql\n\
+\n\
+# Start server\n\
+exec python manage.py runserver 0.0.0.0:8000\n\
+' > /app/entrypoint.sh \
+&& chmod +x /app/entrypoint.sh
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Run the application
+ENTRYPOINT ["/app/entrypoint.sh"]

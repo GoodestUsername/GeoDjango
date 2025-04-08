@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-c1y4ly^@80!91wrbnxrg!wsp%^i_1s!y+mti=h(w5)@wvr+5!0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["50.68.166.224"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "50.68.166.224", "10.0.0.241"]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -79,16 +80,14 @@ WSGI_APPLICATION = 'geodjango.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
-    "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "OntarioTorontoRail",
-        "USER": "postgres",
-        "PASSWORD": "password"
-    },
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'gis',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
+        'PORT': '5432',
+    }
 }
 
 
@@ -133,5 +132,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310"
-GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
+
+# Override GDAL library settings to use the container paths
+if os.environ.get('IN_DOCKER', False):
+    GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+    GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+else:
+    GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310"
+    GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
