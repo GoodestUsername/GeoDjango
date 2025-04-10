@@ -384,30 +384,30 @@ def station_route_for_track(request):
                         start_node AS (
                             SELECT "source" AS node_id 
                             FROM {track_noded_table_name}
-                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
+                            ORDER BY geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
                             LIMIT 1
                         ),
                     
                         end_node AS (
                             SELECT "target" AS node_id 
                             FROM {track_noded_table_name}
-                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
+                            ORDER BY geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
                             LIMIT 1
                         )
     
-                        SELECT route.*, original.*
+		                SELECT route.*, original.*, edges.geom as edge_geom
                         FROM pgr_dijkstra(
                                 'SELECT id,
                                         old_id,
                                         source,
                                         target,
-                                        ST_Length(the_geom) AS cost
+                                        ST_Length(geom) AS cost
                                 FROM {track_noded_table_name}',
                                 (SELECT node_id FROM start_node), 
                                 (SELECT node_id FROM end_node),
                                 FALSE
                         ) AS route
-                        JOIN {track_noded_table_name} AS edges
+                        left JOIN {track_noded_table_name} AS edges
                             ON route.edge = edges.id
                         JOIN {track_table_name} AS original
                             ON original.id = edges.old_id;
@@ -417,12 +417,12 @@ def station_route_for_track(request):
             geojson = {"type": "FeatureCollection", "features": []}
 
             for item in result:
-                geom = GEOSGeometry(memoryview(bytes.fromhex(item["geom"])))
+                geom = GEOSGeometry(memoryview(bytes.fromhex(item["edge_geom"])))
                 feature = {
                     "type": "Feature",
                     "geometry": json.loads(geom.geojson),
                     "properties": {
-                        key: value for key, value in item.items() if key != "geom"
+                        key: value for key, value in item.items() if not ( key == "geom" or key == 'edge_geom')
                     },
                 }
 
