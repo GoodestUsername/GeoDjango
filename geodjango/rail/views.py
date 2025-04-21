@@ -382,17 +382,21 @@ def station_route_for_track(request):
                 f"""
                     WITH 
                         start_node AS (
-                            SELECT "source" AS node_id 
-                            FROM {track_noded_table_name}
-                            ORDER BY geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
-                            LIMIT 1
+                            SELECT id
+                            FROM orwn_track_noded_vertices_pgr
+                            WHERE ST_Within(
+                                orwn_track_noded_vertices_pgr.the_geom,
+                                (SELECT geom FROM {station_table_name} WHERE id = {from_station_id})
+                            )
                         ),
                         end_node AS (
-                            SELECT "target" AS node_id 
-                            FROM {track_noded_table_name}
-                            ORDER BY geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
-                            LIMIT 1
-                        ),    
+                            SELECT id
+                            FROM orwn_track_noded_vertices_pgr
+                            WHERE ST_Within(
+                                orwn_track_noded_vertices_pgr.the_geom,
+                                (SELECT geom FROM {station_table_name} WHERE id = {to_station_id})
+                            )
+                        ), 
                         route AS (
                             SELECT 
                                 row_to_json(route.*) as route_info,
@@ -402,8 +406,8 @@ def station_route_for_track(request):
                             FROM pgr_dijkstra(
                                     'SELECT id, old_id, source, target, ST_Length(geom) AS cost
                                     FROM {track_noded_table_name}',
-                                    (SELECT node_id FROM start_node), 
-                                    (SELECT node_id FROM end_node),
+                                    (SELECT id FROM start_node), 
+                                    (SELECT id FROM end_node),
                                     FALSE
                             ) AS route
                             LEFT JOIN {track_noded_table_name} AS edges
