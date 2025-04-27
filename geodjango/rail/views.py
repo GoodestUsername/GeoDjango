@@ -377,58 +377,59 @@ def station_route_for_track(request):
         track_table_name = OrwnTrack._meta.db_table
         track_noded_table_name = OrwnTrackNoded._meta.db_table
 
-        with connection.cursor() as cursor:
+        with (connection.cursor() as cursor):
             cursor.execute(
                 f"""
                     WITH 
                         start_node AS (
-                            SELECT "source" AS node_id 
-                            FROM {track_noded_table_name}
-                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {from_station_id}) 
-                            LIMIT 1
+                            SELECT id
+                            FROM orwn_track_noded_vertices_pgr
+                            WHERE ST_Within(
+                                orwn_track_noded_vertices_pgr.the_geom,
+                                (SELECT geom FROM {station_table_name} WHERE id = {from_station_id})
+                            )
                         ),
-                    
                         end_node AS (
-                            SELECT "target" AS node_id 
-                            FROM {track_noded_table_name}
-                            ORDER BY the_geom <-> (SELECT geom FROM {station_table_name} WHERE id = {to_station_id}) 
-                            LIMIT 1
+                            SELECT id
+                            FROM orwn_track_noded_vertices_pgr
+                            WHERE ST_Within(
+                                orwn_track_noded_vertices_pgr.the_geom,
+                                (SELECT geom FROM {station_table_name} WHERE id = {to_station_id})
+                            )
+                        ), 
+                        route AS (
+                            SELECT 
+                                row_to_json(route.*) as route_info,
+                                row_to_json(edges.*) as edges,
+                                row_to_json(original.*) as orwn_track,
+                                row_to_json(station.*) as orwn_station
+                            FROM pgr_dijkstra(
+                                    'SELECT id, old_id, source, target, ST_Length(geom) AS cost
+                                    FROM {track_noded_table_name}',
+                                    (SELECT id FROM start_node), 
+                                    (SELECT id FROM end_node),
+                                    FALSE
+                            ) AS route
+                            LEFT JOIN {track_noded_table_name} AS edges
+                                ON route.edge = edges.id
+                            LEFT JOIN {track_table_name} AS original
+                                ON original.id = edges.old_id
+                            LEFT JOIN {station_table_name} AS station
+                                ON  ST_Intersects(station.geom, edges.geom)
+                            ORDER BY seq ASC, ST_LineLocatePoint(edges.geom, station.geom) asc
                         )
-    
-                        SELECT route.*, original.*
-                        FROM pgr_dijkstra(
-                                'SELECT id,
-                                        old_id,
-                                        source,
-                                        target,
-                                        ST_Length(the_geom) AS cost
-                                FROM {track_noded_table_name}',
-                                (SELECT node_id FROM start_node), 
-                                (SELECT node_id FROM end_node),
-                                FALSE
-                        ) AS route
-                        JOIN {track_noded_table_name} AS edges
-                            ON route.edge = edges.id
-                        JOIN {track_table_name} AS original
-                            ON original.id = edges.old_id;
+                    select 
+                        json_agg(route_info) as routing, 
+                        json_agg(edges) as edge, 
+                        json_agg(orwn_track) as orwn_track, 
+                        json_agg(orwn_station) as orwn_station
+                    from route
                 """,
             )
             result = dict_fetch_all(cursor)
-            geojson = {"type": "FeatureCollection", "features": []}
-
-            for item in result:
-                geom = GEOSGeometry(memoryview(bytes.fromhex(item["geom"])))
-                feature = {
-                    "type": "Feature",
-                    "geometry": json.loads(geom.geojson),
-                    "properties": {
-                        key: value for key, value in item.items() if key != "geom"
-                    },
-                }
-
-                geojson["features"].append(feature)
-            return Response(geojson, status=200)
-
+            if len(result) == 1:
+                return Response(result[0], status=200)
+            return Response(status=404)
         # return row
 
         # serialized = serialize("geojson", result, geometry_field="geom", srid=srid)
